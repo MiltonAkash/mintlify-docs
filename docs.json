@@ -3,34 +3,19 @@
   "theme": "mint",
   "name": "Mint Starter Kit",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#ff0000",
+    "light": "#EF4444",
+    "dark": "#B91C1C"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/sudo.svg",
   "navigation": {
     "tabs": [
       {
         "tab": "Guides",
         "groups": [
           {
-            "group": "Get Started",
-            "pages": [
-              "index",
-              "quickstart",
-              "development"
-            ]
-          },
-          {
             "group": "Essentials",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
-            ]
+            "pages": []
           }
         ]
       },
@@ -44,12 +29,10 @@
             ]
           },
           {
-            "group": "Endpoint Examples",
+            "group": "Endpoints",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/endpoint/generate-pdf",
+              "api-reference/endpoint/bulk-generate-pdf"
             ]
           }
         ]
@@ -58,19 +41,19 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "Application",
+          "href": "https://app.sudopdf.com",
+          "icon": "browser"
         },
         {
-          "anchor": "Community",
-          "href": "https://mintlify.com/community",
-          "icon": "slack"
+          "anchor": "Landing Page",
+          "href": "https://sudopdf.com",
+          "icon": "sparkles"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Faq",
+          "href": "https://sudopdf.com/faq",
+          "icon": "square-question"
         }
       ]
     }
@@ -83,20 +66,16 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:sales@sudopdf.com"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "href": "https://app.sudopdf.com"
     }
   },
   "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    "socials": {}
   }
 }
