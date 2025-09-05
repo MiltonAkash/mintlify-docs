@@ -1,11 +1,12 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "linden",
   "name": "Mint Starter Kit",
   "colors": {
-    "primary": "#ff0000",
-    "light": "#EF4444",
-    "dark": "#B91C1C"
+   
+  },
+  "background":{
+    "decoration":"windows"
   },
   "favicon": "/sudo.svg",
   "navigation": {
@@ -19,10 +20,7 @@
           }
         ]
       },
-      {
-        "tab": "SDk sDocumentation",
-        "openapi": "https://app.stainless.com/api/spec/documented/sudopdf/openapi.documented.yml"
-      },
+
       {
         "tab": "API Reference",
         "groups": [

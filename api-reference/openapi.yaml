@@ -1,0 +1,191 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI SudoPdf2
+  description: Endpoints for SudoPdf
+  license:
+    name: MIT
+  version: 1.0.0
+servers:
+  - url: http://app.sudopdf.com
+security:
+  - ApiKeyAuth: []
+paths:
+  /pdf/generate:
+    post:
+      description: Generate a single PDF
+      parameters:
+        - name: async
+          in: query
+          description: Whether to generate the PDF asynchronously
+          schema:
+            type: boolean
+            default: true
+          required: false
+      requestBody:
+        description: PDF to generate
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PdfGenerateRequestBody'
+        required: true
+      responses:
+        "200":
+          description: PDF response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plant'
+        "400":
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+webhooks:
+  /pdf/generate/webhook:
+    post:
+      description: Information about a new plant added to the store
+      requestBody:
+        description: Plant added to the store
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPlant'
+      responses:
+        "200":
+          description: Return a 200 status to indicate that the data was received successfully
+components:
+  schemas:
+    Plant:
+      required:
+        - name
+      type: object
+      properties:
+        name:
+          description: The name of the plant
+          type: string
+        tag:
+          description: Tag to specify the type
+          type: string
+    NewPlant:
+      allOf:
+        - $ref: '#/components/schemas/Plant'
+        - required:
+            - id
+          type: object
+          properties:
+            id:
+              description: Identification number of the plant
+              type: integer
+              format: int64
+    Error:
+      required:
+        - error
+        - message
+      type: object
+      properties:
+        error:
+          type: integer
+          format: int32
+        message:
+          type: string
+    PdfGenerateRequestBody:
+      type: object
+      properties:
+        templateId:
+          type: string
+        data:
+          type: object
+          required: true
+        templateType:
+          type: string
+          enum:
+            - react
+        url:
+          type: string
+          format: uri
+        html:
+          type: string
+        webhook:
+          type: string
+          format: uri
+          description: Webhook URL for asynchronous delivery
+        metaData:
+          type: object
+        delivery:
+          type: object
+          description: Not implemented yet
+          properties:
+            type:
+              type: string
+              enum:
+                - s3
+            bucketName:
+              type: string
+        renderOptions:
+          $ref: '#/components/schemas/RenderOptions'
+    RenderOptions:
+      type: object
+      properties:
+        path:
+          type: string
+        scale:
+          type: number
+          minimum: 0.1
+          maximum: 2
+          default: 1
+        displayHeaderFooter:
+          type: boolean
+        headerTemplate:
+          type: string
+        footerTemplate:
+          type: string
+        printBackground:
+          type: boolean
+        landscape:
+          type: boolean
+        pageRanges:
+          type: string
+        format:
+          type: string
+          enum:
+            - Letter
+            - Legal
+            - Tabloid
+            - Ledger
+            - A0
+            - A1
+            - A2
+            - A3
+            - A4
+            - A5
+            - A6
+        width:
+          type: string
+        height:
+          type: string
+        margin:
+          type: object
+          properties:
+            top:
+              type: string
+            right:
+              type: string
+            bottom:
+              type: string
+            left:
+              type: string
+        preferCSSPageSize:
+          type: boolean
+        timeout:
+          type: integer
+        omitBackground:
+          type: boolean
+  securitySchemes:
+    ApiKeyAuth: # arbitrary name for the security scheme
+      type: apiKey
+      in: header # can be "header", "query" or "cookie"
+      name: X-API-KEY # name of the header, query parameter or cookie
+    bearerAuth:
+      type: http
+      scheme: bearer
