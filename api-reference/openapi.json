@@ -117,7 +117,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Plant"
+                    "$ref": "#/components/schemas/PdfGenerateRequestBody"
                   }
                 }
               }
@@ -152,7 +152,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/PdfGenerateRequestBody"
               }
             }
           },
@@ -294,7 +294,7 @@
     }
   },
   "webhooks": {
-    "/plant/webhook": {
+    "/pdf/generate/webhook": {
       "post": {
         "description": "Information about a new plant added to the store",
         "requestBody": {
@@ -366,6 +366,138 @@
           },
           "message": {
             "type": "string"
+          }
+        }
+      },
+      "PdfGenerateRequestBody": {
+        "type": "object",
+        "properties": {
+          "templateId": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object"
+          },
+          "templateType": {
+            "type": "string",
+            "enum": [
+              "react-pdf",
+              "react",
+              "preact"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "html": {
+            "type": "string"
+          },
+          "webhook": {
+            "type": "string",
+            "format": "uri",
+            "description": "Webhook URL for asynchronous delivery"
+          },
+          "metaData": {
+            "type": "object"
+          },
+          "delivery": {
+            "type": "object",
+            "description": "Not implemented yet",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "s3"
+                ]
+              },
+              "bucketName": {
+                "type": "string"
+              }
+            }
+          },
+          "renderOptions": {
+            "$ref": "#/components/schemas/RenderOptions"
+          }
+        }
+      },
+      "RenderOptions": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "scale": {
+            "type": "number",
+            "minimum": 0.1,
+            "maximum": 2,
+            "default": 1
+          },
+          "displayHeaderFooter": {
+            "type": "boolean"
+          },
+          "headerTemplate": {
+            "type": "string"
+          },
+          "footerTemplate": {
+            "type": "string"
+          },
+          "printBackground": {
+            "type": "boolean"
+          },
+          "landscape": {
+            "type": "boolean"
+          },
+          "pageRanges": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "Letter",
+              "Legal",
+              "Tabloid",
+              "Ledger",
+              "A0",
+              "A1",
+              "A2",
+              "A3",
+              "A4",
+              "A5",
+              "A6"
+            ]
+          },
+          "width": {
+            "type": "string"
+          },
+          "height": {
+            "type": "string"
+          },
+          "margin": {
+            "type": "object",
+            "properties": {
+              "top": {
+                "type": "string"
+              },
+              "right": {
+                "type": "string"
+              },
+              "bottom": {
+                "type": "string"
+              },
+              "left": {
+                "type": "string"
+              }
+            }
+          },
+          "preferCSSPageSize": {
+            "type": "boolean"
+          },
+          "timeout": {
+            "type": "integer"
+          },
+          "omitBackground": {
+            "type": "boolean"
           }
         }
       }
