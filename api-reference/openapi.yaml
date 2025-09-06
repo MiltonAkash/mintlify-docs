@@ -1,12 +1,12 @@
 openapi: 3.1.0
 info:
-  title: OpenAPI SudoPdf2
-  description: Endpoints for SudoPdf
+  title: SudoPdf - Do Pdf like you do UI
+  description: Generate beautiful PDFs from HTML, URLs, or templates with powerful rendering options and webhook support 
   license:
     name: MIT
   version: 1.0.0
 servers:
-  - url: http://app.sudopdf.com
+  - url: http://app.sudopdf.com/api/v1
 security:
   - ApiKeyAuth: []
 paths:
@@ -14,12 +14,12 @@ paths:
     post:
       description: Generate a single PDF
       parameters:
-        - name: async
+        - name: sync
           in: query
-          description: Whether to generate the PDF asynchronously
+          description: Whether to generate the PDF synchronously. Not recomended for production use
           schema:
             type: boolean
-            default: true
+            default: false
           required: false
       requestBody:
         description: PDF to generate
@@ -30,11 +30,26 @@ paths:
         required: true
       responses:
         "200":
-          description: PDF response
+          description: PDF response (varies based on async parameter)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Plant'
+                oneOf:
+                  - $ref: '#/components/schemas/PdfResponse'
+                  - $ref: '#/components/schemas/AsyncPdfResponse'
+              examples:
+                sync_response:
+                  summary: Synchronous response (async=false)
+                  value:
+                    pdfUrl: "https://app.sudopdf.com/files/abc123.pdf"
+                    status: "completed"
+                    fileSize: 245760
+                async_response:
+                  summary: Asynchronous response (async=true)
+                  value:
+                    jobId: "job_abc123"
+                    status: "processing"
+                    webhookUrl: "https://your-app.com/webhook"
         "400":
           description: unexpected error
           content:
@@ -44,40 +59,87 @@ paths:
 webhooks:
   /pdf/generate/webhook:
     post:
-      description: Information about a new plant added to the store
+      description: Webhook called when PDF generation completes (async mode only)
       requestBody:
-        description: Plant added to the store
+        description: PDF generation completion notification
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewPlant'
+              $ref: '#/components/schemas/WebhookPayload'
       responses:
         "200":
-          description: Return a 200 status to indicate that the data was received successfully
+          description: Return a 200 status to indicate that the webhook was received successfully
 components:
   schemas:
-    Plant:
-      required:
-        - name
+    PdfResponse:
       type: object
+      description: Synchronous PDF generation response
+      required:
+        - pdfUrl
+        - status
       properties:
-        name:
-          description: The name of the plant
+        pdfUrl:
           type: string
-        tag:
-          description: Tag to specify the type
+          format: uri
+          description: Direct URL to the generated PDF
+        status:
           type: string
-    NewPlant:
-      allOf:
-        - $ref: '#/components/schemas/Plant'
-        - required:
-            - id
-          type: object
-          properties:
-            id:
-              description: Identification number of the plant
-              type: integer
-              format: int64
+          enum: [completed]
+          description: Generation status
+        fileSize:
+          type: integer
+          description: PDF file size in bytes
+        generatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when PDF was generated
+    AsyncPdfResponse:
+      type: object
+      description: Asynchronous PDF generation response
+      required:
+        - jobId
+        - status
+      properties:
+        jobId:
+          type: string
+          description: Unique job identifier for tracking
+        status:
+          type: string
+          enum: [processing, queued]
+          description: Current job status
+        webhookUrl:
+          type: string
+          format: uri
+          description: Webhook URL for completion notification
+        estimatedCompletionTime:
+          type: integer
+          description: Estimated completion time in seconds
+    WebhookPayload:
+      type: object
+      description: Webhook payload sent when PDF generation completes
+      required:
+        - jobId
+        - status
+        - pdfUrl
+      properties:
+        jobId:
+          type: string
+          description: Job identifier that was returned in async response
+        status:
+          type: string
+          enum: [completed, failed]
+          description: Final job status
+        pdfUrl:
+          type: string
+          format: uri
+          description: URL to the generated PDF (only present if status is completed)
+        error:
+          type: string
+          description: Error message (only present if status is failed)
+        completedAt:
+          type: string
+          format: date-time
+          description: Timestamp when job completed
     Error:
       required:
         - error
@@ -94,34 +156,25 @@ components:
       properties:
         templateId:
           type: string
+          description: Unique Id of your template you like to render
         data:
           type: object
           required: true
+          description: Any data that use inside the template. Prefer metadata if you are not planning to use that data inside template
         templateType:
           type: string
           enum:
             - react
         url:
           type: string
+          description: You can pass a url directly and get the webpage rendered. 
           format: uri
         html:
           type: string
-        webhook:
-          type: string
-          format: uri
-          description: Webhook URL for asynchronous delivery
-        metaData:
+        metadata:
           type: object
-        delivery:
-          type: object
-          description: Not implemented yet
-          properties:
-            type:
-              type: string
-              enum:
-                - s3
-            bucketName:
-              type: string
+          description: Data associated with this render but not used inside template. 
+          
         renderOptions:
           $ref: '#/components/schemas/RenderOptions'
     RenderOptions:

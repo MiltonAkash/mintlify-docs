@@ -3,7 +3,7 @@
   "theme": "linden",
   "name": "Mint Starter Kit",
   "colors": {
-   
+   "primary": "#ffffff"
   },
   "background":{
     "decoration":"windows"
