@@ -57,7 +57,38 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 webhooks:
-  /pdf/generate/webhook:
+  pdf.created:
+    post:
+      summary: Fired when a PDF has been created
+      description: >
+        We POST this event to your endpoint after a PDF is generated.
+        Your endpoint must return a 2xx response within 10 seconds.
+        Use the `svix-id`, `svix-timestamp`, and `svix-signature` headers
+        to verify authenticity with your Svix signing secret.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PdfCreatedEvent'
+            examples:
+              sample:
+                value:
+                  type: pdf.created
+                  id: "evt_123"
+                  createdAt: "2025-09-06T12:34:56Z"
+                  data:
+                    pdfId: "pdf_456"
+                    url: "https://cdn.example.com/pdfs/pdf_456.pdf"
+                    status: "completed"
+      responses:
+        '200':
+          description: Receipt acknowledged
+      parameters:
+        - $ref: '#/components/parameters/Svix-Id'
+        - $ref: '#/components/parameters/Svix-Timestamp'
+        - $ref: '#/components/parameters/Svix-Signature'
+  /pdf/generate:
     post:
       description: Webhook called when PDF generation completes (async mode only)
       requestBody:
@@ -71,6 +102,36 @@ webhooks:
           description: Return a 200 status to indicate that the webhook was received successfully
 components:
   schemas:
+    PdfCreatedEvent:
+      type: object
+      required: [type, id, createdAt, data]
+      properties:
+        type:
+          type: string
+          enum: [pdf.created]
+        id:
+          type: string
+          description: Event id
+        createdAt:
+          type: string
+          format: date-time
+        data:
+          $ref: '#/components/schemas/Pdf'
+    Pdf:
+      type: object
+      required: [pdfId, url, status]
+      properties:
+        pdfId:
+          type: string
+          description: Unique identifier for the PDF
+        url:
+          type: string
+          format: uri
+          description: Direct link to the generated PDF file
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+          description: Current status of PDF generation
     PdfResponse:
       type: object
       description: Synchronous PDF generation response
@@ -254,11 +315,29 @@ components:
         omitBackground:
           type: boolean
           description: Whether to omit the background graphics and only render the content
+  parameters:
+    Svix-Id:
+      name: svix-id
+      in: header
+      required: true
+      description: Unique message identifier; constant on retries.
+      schema: { type: string }
+    Svix-Timestamp:
+      name: svix-timestamp
+      in: header
+      required: true
+      description: UNIX timestamp (seconds) when the webhook was sent.
+      schema: { type: string, pattern: "^[0-9]+$" }
+    Svix-Signature:
+      name: svix-signature
+      in: header
+      required: true
+      description: >
+        HMAC-SHA256 signature(s) over "{id}.{timestamp}.{payload}".
+        Format: space-delimited list of "v<ver>,<base64_signature>" (e.g. "v1,abc...").
+      schema: { type: string }
   securitySchemes:
     ApiKeyAuth: # arbitrary name for the security scheme
       type: apiKey
       in: header # can be "header", "query" or "cookie"
       name: X-API-KEY # name of the header, query parameter or cookie
-    bearerAuth:
-      type: http
-      scheme: bearer
