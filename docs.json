@@ -3,10 +3,10 @@
   "theme": "linden",
   "name": "Mint Starter Kit",
   "colors": {
-   "primary": "#ffffff"
+    "primary": "#ffffff"
   },
-  "background":{
-    "decoration":"windows"
+  "background": {
+    "decoration": "windows"
   },
   "favicon": "/sudo.svg",
   "navigation": {
@@ -20,7 +20,6 @@
           }
         ]
       },
-
       {
         "tab": "API Reference",
         "groups": [
@@ -79,5 +78,14 @@
   },
   "footer": {
     "socials": {}
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity"
+    ]
   }
 }
