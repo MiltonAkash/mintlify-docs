@@ -192,11 +192,11 @@ paths:
                     subCode: "INTERNAL_ERROR"
                     message: "Internal server error during PDF generation"
 webhooks:
-  pdf.created:
+  pdf.generated:
     post:
-      summary: Fired when a PDF has been created
+      summary: Fired when a PDF has been successfully generated (async mode)
       description: >
-        We POST this event to your endpoint after a PDF is generated.
+        We POST this event to your endpoint after a PDF is successfully generated in async mode.
         Your endpoint must return a 2xx response within 10 seconds.
         Use the `svix-id`, `svix-timestamp`, and `svix-signature` headers
         to verify authenticity with your Svix signing secret.
@@ -205,17 +205,56 @@ webhooks:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PdfCreatedEvent'
+              $ref: '#/components/schemas/PdfGeneratedEvent'
             examples:
               sample:
                 value:
-                  type: pdf.created
-                  id: "evt_123"
-                  createdAt: "2025-09-06T12:34:56Z"
+                  success: true
+                  event: "PDF_GENERATED"
+                  requestId: "req_123"
+                  mode: "async"
+                  message: "PDF generated successfully"
+                  templateType: "react"
+                  environment: "production"
                   data:
-                    pdfId: "pdf_456"
-                    url: "https://cdn.example.com/pdfs/pdf_456.pdf"
-                    status: "completed"
+                    url: "https://app.sudopdf.com/files/abc123.pdf"
+                    creditsUsed: 1
+                  timestamp: "2025-09-14T12:34:56Z"
+      responses:
+        '200':
+          description: Receipt acknowledged
+      parameters:
+        - $ref: '#/components/parameters/Svix-Id'
+        - $ref: '#/components/parameters/Svix-Timestamp'
+        - $ref: '#/components/parameters/Svix-Signature'
+  pdf.failed:
+    post:
+      summary: Fired when PDF generation fails (async mode)
+      description: >
+        We POST this event to your endpoint if PDF generation fails in async mode.
+        Your endpoint must return a 2xx response within 10 seconds.
+        Use the `svix-id`, `svix-timestamp`, and `svix-signature` headers
+        to verify authenticity with your Svix signing secret.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PdfFailedEvent'
+            examples:
+              sample:
+                value:
+                  success: false
+                  event: "PDF_GENERATION_FAILED"
+                  requestId: "req_123"
+                  mode: "async"
+                  errorCode: "500"
+                  subCode: "PDF_GENERATION_FAILED"
+                  message: "PDF generation failed"
+                  details: "Template compilation error"
+                  meta:
+                    issues: []
+                  timestamp: "2025-09-14T12:34:56Z"
       responses:
         '200':
           description: Receipt acknowledged
@@ -226,36 +265,88 @@ webhooks:
 
 components:
   schemas:
-    PdfCreatedEvent:
+    PdfGeneratedEvent:
       type: object
-      required: [type, id, createdAt, data]
+      required: [success, event, requestId, mode, message, data, timestamp]
       properties:
-        type:
+        success:
+          type: boolean
+          example: true
+        event:
           type: string
-          enum: [pdf.created]
-        id:
+          enum: [PDF_GENERATED]
+        requestId:
           type: string
-          description: Event id
-        createdAt:
+          description: Correlation ID from original request
+        mode:
+          type: string
+          enum: [async]
+        message:
+          type: string
+          example: "PDF generated successfully"
+        templateType:
+          type: string
+          enum: [react, html, url]
+        environment:
+          type: string
+          enum: [development, production]
+        data:
+          type: object
+          required: [url, creditsUsed]
+          properties:
+            url:
+              type: string
+              format: uri
+              description: S3 URL of the generated PDF
+            creditsUsed:
+              type: integer
+              example: 1
+        timestamp:
           type: string
           format: date-time
-        data:
-          $ref: '#/components/schemas/Pdf'
-    Pdf:
+
+    PdfFailedEvent:
       type: object
-      required: [pdfId, url, status]
+      required: [success, event, requestId, mode, errorCode, subCode, message, timestamp]
       properties:
-        pdfId:
+        success:
+          type: boolean
+          example: false
+        event:
           type: string
-          description: Unique identifier for the PDF
-        url:
+          enum: [PDF_GENERATION_FAILED]
+        requestId:
           type: string
-          format: uri
-          description: Direct link to the generated PDF file
-        status:
+          description: Correlation ID from original request
+        mode:
           type: string
-          enum: [pending, processing, completed, failed]
-          description: Current status of PDF generation
+          enum: [async]
+        errorCode:
+          type: string
+          enum: ["500"]  # Adjust based on possible failure codes
+          description: Maps to HTTP status code class
+        subCode:
+          type: string
+          description: Specific error subcode
+          example: "PDF_GENERATION_FAILED"
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: string
+          description: Optional extra debug info
+        meta:
+          type: object
+          description: Optional structured data
+          additionalProperties: true
+          example:
+            requiredCredits: 1
+            availableCredits: 0
+            issues: []
+        timestamp:
+          type: string
+          format: date-time
+
     PdfSuccessResponse:
       type: object
       description: Unified PDF generation success response

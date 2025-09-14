@@ -16,9 +16,7 @@
         "groups": [
           {
             "group": "Essentials",
-            "pages": [
-             
-            ]
+            "pages": []
           }
         ]
       },
@@ -35,7 +33,8 @@
             "group": "Endpoints",
             "pages": [
               "api-reference/endpoint/generate-pdf",
-              "api-reference/endpoint/webhook"
+              "api-reference/endpoint/pdf.generated",
+              "api-reference/endpoint/pdf.failed"
             ]
           }
         ]
