@@ -30,26 +30,33 @@ paths:
         required: true
       responses:
         "200":
-          description: PDF response (varies based on async parameter)
+          description: PDF generation response
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/PdfResponse'
-                  - $ref: '#/components/schemas/AsyncPdfResponse'
+                $ref: '#/components/schemas/PdfSuccessResponse'
               examples:
                 sync_response:
-                  summary: Synchronous response (async=false)
+                  summary: Synchronous response (sync=true)
                   value:
-                    pdfUrl: "https://app.sudopdf.com/files/abc123.pdf"
-                    status: "completed"
-                    fileSize: 245760
+                    success: true
+                    mode: "sync"
+                    message: "PDF generated successfully"
+                    templateType: "react"
+                    environment: "production"
+                    data:
+                      url: "https://app.sudopdf.com/files/abc123.pdf"
+                      creditsUsed: 1
                 async_response:
-                  summary: Asynchronous response (async=true)
+                  summary: Asynchronous response (sync=false)
                   value:
-                    jobId: "job_abc123"
-                    status: "processing"
-                    webhookUrl: "https://your-app.com/webhook"
+                    success: true
+                    mode: "async"
+                    message: "PDF generation job accepted"
+                    templateType: "html"
+                    environment: "production"
+                    data:
+                      status: "accepted"
         "400":
           description: unexpected error
           content:
@@ -121,49 +128,66 @@ components:
           type: string
           enum: [pending, processing, completed, failed]
           description: Current status of PDF generation
-    PdfResponse:
+    PdfSuccessResponse:
       type: object
-      description: Synchronous PDF generation response
+      description: Unified PDF generation success response
       required:
-        - pdfUrl
-        - status
+        - success
+        - mode
+        - message
+        - data
       properties:
-        pdfUrl:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        mode:
+          type: string
+          enum: [sync, async]
+          description: Response mode - sync for immediate PDF generation, async for background processing
+        message:
+          type: string
+          description: Human-readable summary of the response
+          example: "PDF generated successfully"
+        templateType:
+          type: string
+          enum: [react, html, url]
+          description: Type of template used for PDF generation (present if applicable)
+        environment:
+          type: string
+          enum: [development, production]
+          description: Environment where the PDF was generated
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/SyncPdfData'
+            - $ref: '#/components/schemas/AsyncPdfData'
+    SyncPdfData:
+      type: object
+      description: Data payload for synchronous PDF generation
+      required:
+        - url
+        - creditsUsed
+      properties:
+        url:
           type: string
           format: uri
-          description: Direct URL to the generated PDF
-        status:
-          type: string
-          enum: [completed]
-          description: Generation status
-        fileSize:
+          description: Direct URL to the generated PDF file
+          example: "https://app.sudopdf.com/files/abc123.pdf"
+        creditsUsed:
           type: integer
-          description: PDF file size in bytes
-        generatedAt:
-          type: string
-          format: date-time
-          description: Timestamp when PDF was generated
-    AsyncPdfResponse:
+          description: Number of credits consumed for this PDF generation
+          example: 1
+    AsyncPdfData:
       type: object
-      description: Asynchronous PDF generation response
+      description: Data payload for asynchronous PDF generation
       required:
-        - jobId
         - status
       properties:
-        jobId:
-          type: string
-          description: Unique job identifier for tracking
         status:
           type: string
-          enum: [processing, queued]
-          description: Current job status
-        webhookUrl:
-          type: string
-          format: uri
-          description: Webhook URL for completion notification
-        estimatedCompletionTime:
-          type: integer
-          description: Estimated completion time in seconds
+          enum: [accepted]
+          description: Status of the PDF generation job
+          example: "accepted"
     WebhookPayload:
       type: object
       description: Webhook payload sent when PDF generation completes
@@ -215,6 +239,8 @@ components:
           type: string
           enum:
             - react
+            - html
+            - url
         url:
           type: string
           description: You can pass a url directly and get the webpage rendered. 
