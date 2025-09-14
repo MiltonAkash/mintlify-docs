@@ -88,18 +88,7 @@ webhooks:
         - $ref: '#/components/parameters/Svix-Id'
         - $ref: '#/components/parameters/Svix-Timestamp'
         - $ref: '#/components/parameters/Svix-Signature'
-  /pdf/generate:
-    post:
-      description: Webhook called when PDF generation completes (async mode only)
-      requestBody:
-        description: PDF generation completion notification
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WebhookPayload'
-      responses:
-        "200":
-          description: Return a 200 status to indicate that the webhook was received successfully
+
 components:
   schemas:
     PdfCreatedEvent:
