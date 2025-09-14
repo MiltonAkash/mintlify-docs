@@ -58,11 +58,139 @@ paths:
                     data:
                       status: "accepted"
         "400":
-          description: unexpected error
+          description: Bad Request - Invalid input or fetch failed
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                fetch_failed_bad_response:
+                  summary: URL Fetch Failed – Bad Response
+                  value:
+                    success: false
+                    errorCode: "400"
+                    subCode: "FETCH_FAILED_BAD_RESPONSE"
+                    message: "Failed to fetch content from provided URL"
+                fetch_failed_network_error:
+                  summary: URL Fetch Failed – Network Error
+                  value:
+                    success: false
+                    errorCode: "400"
+                    subCode: "FETCH_FAILED_NETWORK_ERROR"
+                    message: "Failed to fetch content from provided URL"
+                    details: "NetworkError: Failed to fetch"
+        "401":
+          description: Unauthorized - Authentication errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_api_key:
+                  summary: Missing API Key
+                  value:
+                    success: false
+                    errorCode: "401"
+                    subCode: "MISSING_API_KEY"
+                    message: "Missing X-API-KEY header"
+                invalid_api_key:
+                  summary: Invalid API Key
+                  value:
+                    success: false
+                    errorCode: "401"
+                    subCode: "INVALID_API_KEY"
+                    message: "Invalid API key"
+                expired_api_key:
+                  summary: Expired API Key
+                  value:
+                    success: false
+                    errorCode: "401"
+                    subCode: "EXPIRED_API_KEY"
+                    message: "API KEY EXPIRED"
+        "402":
+          description: Payment Required - Insufficient credits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                insufficient_credits:
+                  summary: Insufficient Credits
+                  value:
+                    success: false
+                    errorCode: "402"
+                    subCode: "INSUFFICIENT_CREDITS"
+                    message: "You have 0 credits remaining. Please purchase more credits."
+                    meta:
+                      requiredCredits: 1
+                      availableCredits: 0
+                      activeSubscriptions: []
+                      expiringCredits: []
+        "404":
+          description: Not Found - Template not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                template_not_found:
+                  summary: Template Not Found
+                  value:
+                    success: false
+                    errorCode: "404"
+                    subCode: "TEMPLATE_NOT_FOUND"
+                    message: "Template not found"
+        "422":
+          description: Unprocessable Entity - Validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_request_body:
+                  summary: Invalid Request Body
+                  value:
+                    success: false
+                    errorCode: "422"
+                    subCode: "INVALID_REQUEST_BODY"
+                    message: "Invalid input provided"
+                    meta:
+                      issues:
+                        - path: ["templateId"]
+                          message: "Either templateId, url, or html must be provided"
+                          code: "custom"
+                        - path: ["templateType"]
+                          message: "Invalid enum value. Expected 'react' | 'html' | 'url'"
+                          code: "invalid_enum_value"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                pdf_generation_failed:
+                  summary: PDF Generation Failed
+                  value:
+                    success: false
+                    errorCode: "500"
+                    subCode: "PDF_GENERATION_FAILED"
+                    message: "PDF generation failed"
+                    details: "Template compilation error - Invalid React component"
+                credit_consumption_failed:
+                  summary: Credit Consumption Failed
+                  value:
+                    success: false
+                    errorCode: "500"
+                    subCode: "CREDIT_CONSUMPTION_FAILED"
+                    message: "PDF was generated but credit consumption failed. Please contact support."
+                internal_error:
+                  summary: Internal Server Error
+                  value:
+                    success: false
+                    errorCode: "500"
+                    subCode: "INTERNAL_ERROR"
+                    message: "Internal server error during PDF generation"
 webhooks:
   pdf.created:
     post:
@@ -214,17 +342,43 @@ components:
           type: string
           format: date-time
           description: Timestamp when job completed
-    Error:
-      required:
-        - error
-        - message
+    ErrorResponse:
       type: object
+      description: Common error response structure
+      required:
+        - success
+        - errorCode
+        - subCode
+        - message
       properties:
-        error:
-          type: integer
-          format: int32
+        success:
+          type: boolean
+          description: Indicates if the request was successful (always false for errors)
+          example: false
+        errorCode:
+          type: string
+          enum: ["400", "401", "402", "404", "422", "500"]
+          description: HTTP status code as string
+        subCode:
+          type: string
+          description: Specific error subcode
+          example: "MISSING_API_KEY"
         message:
           type: string
+          description: Human-readable error message
+        details:
+          type: string
+          description: Optional detailed error information (e.g., stack traces, network errors)
+        meta:
+          type: object
+          description: Optional structured metadata for the error
+          additionalProperties: true
+          example:
+            requiredCredits: 1
+            availableCredits: 0
+            activeSubscriptions: []
+            expiringCredits: []
+            issues: []
     PdfGenerateRequestBody:
       type: object
       properties:
