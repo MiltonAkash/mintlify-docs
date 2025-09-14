@@ -472,14 +472,16 @@ components:
             issues: []
     PdfGenerateRequestBody:
       type: object
+      required:
+        - data
       properties:
         templateId:
           type: string
           description: Unique Id of your template you like to render
         data:
           type: object
-          required: true
           description: Any data that use inside the template. Prefer metadata if you are not planning to use that data inside template
+          additionalProperties: true
         templateType:
           type: string
           enum:
@@ -495,6 +497,7 @@ components:
         metadata:
           type: object
           description: Data associated with this render but not used inside template. 
+          additionalProperties: true
           
         renderOptions:
           $ref: '#/components/schemas/RenderOptions'
