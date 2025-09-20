@@ -482,12 +482,6 @@ components:
           type: object
           description: Any data that use inside the template. Prefer metadata if you are not planning to use that data inside template
           additionalProperties: true
-        templateType:
-          type: string
-          enum:
-            - react
-            - html
-            - url
         url:
           type: string
           description: You can pass a url directly and get the webpage rendered. 
