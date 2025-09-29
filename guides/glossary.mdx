@@ -1,0 +1,93 @@
+---
+title: 'Glossary'
+description: 'Glossary of terms used in SudoPdf'
+---
+
+
+
+
+
+This guide will walk you through the process of getting started with SudoPdf.
+
+## 1. Create an account
+
+First, you need to create an account on SudoPdf. You can do this by clicking the "Sign Up" button in the top right corner of the screen.
+
+## 2. Setup a template 
+
+After you have created an account, you need to setup a template. You can do this by clicking the "Create Template" button on our templates page. 
+
+You will be provided with rendering modes to choose from. By default, you can go with the basic model. 
+
+Once you choose the rendering model, you will be redirected to the created template 
+
+
+
+
+
+
+## Authentication
+
+
+Please generate a `API Key` in the [application](https://app.sudopdf.com/settings/api-keys) to use the API. 
+
+These `API Key` are used to authenticate the requests to the API and should be appended to the request header as `Authorization: Bearer <API Key>`.
+
+
+
+# SDK
+
+We have a SDK for Typescript/javascript for now and its the most recommended way to use the API. 
+It is a library that wraps the API and provides a simple interface to use the API. Its also type-safe and can save your time on tinkering. 
+
+
+```typescript
+import { SudoPdf } from "@sudopdf/sdk";
+
+const sudoPdf = new SudoPdf({
+  apiKey: "your-api-key",
+});
+
+const pdf = await sudoPdf.generatePdf({
+  templateId: "your-template-id",
+  data: {
+    name: "John Doe",
+    email: "john.doe@example.com",
+  },
+  async: true,
+  filename: "your-filename.pdf",
+  webhook: "https://your-webhook-url",
+  webhookSecret: "your-webhook-secret",
+
+});
+```
+
+<Note>
+ Please contact us at [sales@sudopdf.com](mailto:sales@sudopdf.com) for SDK on your favorite language on request and future commitment.
+</Note>
+
+# API 
+
+We offer two main API endpoints to generate PDF. One for geeneration of PDF and another to bulk pdf generation. 
+
+
+<CardGroup cols={2}>
+
+<Card
+  title="Generate PDF"
+  icon="file-pdf"
+  href="/api-reference/endpoint/generate-pdf"
+>
+  Generate a PDF
+</Card>
+
+
+
+<Card
+  title="Bulk Generate PDF"
+  icon="files"
+  href="/api-reference/endpoint/bulk-generate-pdf"
+>
+  Generate multiple PDFs in bulk
+</Card>
+</CardGroup>
