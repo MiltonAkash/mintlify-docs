@@ -191,6 +191,21 @@ paths:
                     errorCode: "500"
                     subCode: "INTERNAL_ERROR"
                     message: "Internal server error during PDF generation"
+      x-codeSamples:
+        - lang: JavaScript
+          source: |-
+            import Sudopdf from '@sudopdf/sdk';
+
+            const client = new Sudopdf({
+              apiKey: 'My API Key', // process.env['SUDOPDF_API_KEY'] is the default and can be omitted.
+            });
+
+            const response = await client.pdf.generate({ 
+              templateId: 22
+              data: { foo: 'bar' } 
+            });
+
+            console.log(response.data);
 webhooks:
   pdf.generated:
     post:
