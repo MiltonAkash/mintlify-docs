@@ -3,6 +3,13 @@ title: 'Introduction'
 description: 'Welcome to the SudoPdf API reference. Here you will find all the endpoints to generate PDF'
 ---
 
+<Card
+  title=" Generate PDF"
+  icon="files"
+  href="/api-reference/endpoint/generate-pdf"
+>
+  Generate a PDF
+</Card>
 
 ## Authentication
 
@@ -13,59 +20,13 @@ These `API Key` are used to authenticate the requests to the API and should be a
 
 
 
-# SDK
+# Installing SDK
+
+```bash
+npm install @sudopdf/sdk
+```
 
 We have a SDK for Typescript/javascript for now and its the most recommended way to use the API. 
 It is a library that wraps the API and provides a simple interface to use the API. Its also type-safe and can save your time on tinkering. 
 
 
-```typescript
-import { SudoPdf } from "@sudopdf/sdk";
-
-const sudoPdf = new SudoPdf({
-  apiKey: "your-api-key",
-});
-
-const pdf = await sudoPdf.generatePdf({
-  templateId: "your-template-id",
-  data: {
-    name: "John Doe",
-    email: "john.doe@example.com",
-  },
-  async: true,
-  filename: "your-filename.pdf",
-  webhook: "https://your-webhook-url",
-  webhookSecret: "your-webhook-secret",
-
-});
-```
-
-<Note>
- Please contact us at [sales@sudopdf.com](mailto:sales@sudopdf.com) for SDK on your favorite language on request and future commitment.
-</Note>
-
-# API 
-
-We offer two main API endpoints to generate PDF. One for geeneration of PDF and another to bulk pdf generation. 
-
-
-<CardGroup cols={2}>
-
-<Card
-  title="Generate PDF"
-  icon="file-pdf"
-  href="/api-reference/endpoint/generate-pdf"
->
-  Generate a PDF
-</Card>
-
-
-
-<Card
-  title="Bulk Generate PDF"
-  icon="files"
-  href="/api-reference/endpoint/bulk-generate-pdf"
->
-  Generate multiple PDFs in bulk
-</Card>
-</CardGroup>
