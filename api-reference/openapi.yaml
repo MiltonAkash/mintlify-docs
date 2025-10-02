@@ -42,7 +42,6 @@ paths:
                     success: true
                     mode: "sync"
                     message: "PDF generated successfully"
-                    templateType: "react"
                     environment: "production"
                     data:
                       url: "https://app.sudopdf.com/files/abc123.pdf"
@@ -53,7 +52,6 @@ paths:
                     success: true
                     mode: "async"
                     message: "PDF generation job accepted"
-                    templateType: "html"
                     environment: "production"
                     data:
                       status: "accepted"
@@ -159,9 +157,6 @@ paths:
                         - path: ["templateId"]
                           message: "Either templateId, url, or html must be provided"
                           code: "custom"
-                        - path: ["templateType"]
-                          message: "Invalid enum value. Expected 'react' | 'html' | 'url'"
-                          code: "invalid_enum_value"
         "500":
           description: Internal Server Error
           content:
@@ -229,7 +224,6 @@ webhooks:
                   requestId: "req_123"
                   mode: "async"
                   message: "PDF generated successfully"
-                  templateType: "react"
                   environment: "production"
                   data:
                     url: "https://app.sudopdf.com/files/abc123.pdf"
@@ -299,9 +293,6 @@ components:
         message:
           type: string
           example: "PDF generated successfully"
-        templateType:
-          type: string
-          enum: [react, html, url]
         environment:
           type: string
           enum: [development, production]
@@ -383,10 +374,6 @@ components:
           type: string
           description: Human-readable summary of the response
           example: "PDF generated successfully"
-        templateType:
-          type: string
-          enum: [react, html, url]
-          description: Type of template used for PDF generation (present if applicable)
         environment:
           type: string
           enum: [development, production]
