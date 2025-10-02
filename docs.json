@@ -51,11 +51,6 @@
           "anchor": "Landing Page",
           "href": "https://sudopdf.com",
           "icon": "sparkles"
-        },
-        {
-          "anchor": "Faq",
-          "href": "https://sudopdf.com/faq",
-          "icon": "square-question"
         }
       ]
     }
