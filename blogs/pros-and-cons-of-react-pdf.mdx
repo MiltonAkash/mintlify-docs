@@ -1,0 +1,45 @@
+---
+title: "Pros and Cons of react-pdf"
+description: "A practical look at react-pdf — what it gets right, where it falls short, and how it compares to modern PDF solutions like Sudopdf."
+author: "Akash Milton"
+icon: 'newspaper'
+date: "2025-10-22"
+---
+
+## Understanding react-pdf  
+
+[`react-pdf`](https://react-pdf.org/) is one of the most popular libraries for generating PDFs using React components. Instead of working with HTML templates or headless browsers, it lets developers build documents entirely within React — using the same logic, syntax, and component patterns they already know.  
+
+For developers comfortable with React, this approach feels intuitive. You can use loops, conditions, and data transformations just as you would in a typical UI, while react-pdf handles the rendering of those components into a final PDF file. It’s efficient, predictable, and doesn’t rely on browser instances, making it far more performant than most other HTML-to-PDF solutions.  
+
+---
+
+## Why Developers Love It  
+
+The main appeal of react-pdf lies in its **React-native-like structure**. You can compose your document with `<View>`, `<Text>`, and `<Image>` components, reuse data logic, and dynamically create layouts with ease. It also manages pagination gracefully — splitting long content into proper pages without the usual headaches of manual height calculations.  
+
+Because it runs in Node.js, react-pdf performs consistently across environments and avoids the overhead of spinning up headless browsers like Chromium. This makes it a great fit for serverless or lightweight deployment setups. For simple documents like invoices, reports, or tickets, it’s clean and fast.  
+
+---
+
+## Where It Falls Short  
+
+However, the simplicity that makes react-pdf approachable is also what limits it. It requires a **Node environment**, so it’s not easily portable to other backends like Python or Go. You can’t just plug it into an existing system — it needs its own setup.  
+
+The component library is also quite restrictive. You’re limited to a handful of primitives, and building complex elements such as tables or multi-column layouts often requires awkward workarounds. On top of that, react-pdf uses a custom layout engine (Yoga), not the browser’s CSS model, which means you lose access to familiar styling features like grids, pseudo-elements, or advanced selectors.  
+
+Even though it’s React-based, it doesn’t support most third-party React libraries. You can’t import MUI, Chakra UI, or Tailwind directly, which makes it feel disconnected from the wider React ecosystem. And since you can’t reuse your existing HTML templates, every document has to be rebuilt entirely in react-pdf syntax — a time sink for teams managing multiple templates or branded layouts.  
+
+---
+
+## The Verdict  
+
+react-pdf is elegant for what it is: a clean, React-driven way to render simple PDFs. It’s perfect for developers who live in React and need straightforward, data-bound document generation. But for projects that demand pixel-perfect precision, flexible styling, or easy integration across stacks, it can quickly become cumbersome.  
+
+That’s why many developers turn to **[Sudopdf](https://sudopdf.com)**. Instead of rebuilding documents from scratch, Sudopdf lets you convert any existing HTML, web page, or API response into a production-ready PDF — instantly. No Node setup, no component restrictions, no styling headaches. It keeps your original design intact and works across any backend.  
+
+---
+
+**In short:**  
+React-pdf is great when you want to basic high static pdfs with ease and react.  
+**Sudopdf** is better when you just want them *done* and need greater flexibility.

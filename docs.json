@@ -46,7 +46,8 @@
             "group": "Blogs",
             "pages": [
               "blogs/pdf-viewer-guide",
-              "blogs/psychology-of-pdfs-over-ui"
+              "blogs/psychology-of-pdfs-over-ui",
+              "blogs/pros-and-cons-of-react-pdf"
             ]
           }
         ]
