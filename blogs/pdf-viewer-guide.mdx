@@ -1,0 +1,220 @@
+---
+
+title: React PDF Viewers — The 2025 Guide
+description: Compare React PDF viewer options (OSS and commercial), with copy‑paste code, Next.js tips, performance and security checklists.
+icon: "newspaper"
+sidebarTitle: "React PDF Viewers"
+tags: [react, pdf, nextjs, pdfjs, viewers]
+------------------------------------------
+
+If you’re building a React app that needs to render PDFs, you’ve got a buffet of choices—from lightweight, OSS components to full‑blown commercial SDKs with redaction, signing, and real‑time collaboration. This Mintlify edition keeps everything in standard Markdown (tables + fenced code) and uses callouts where helpful.
+
+# TL;DR
+
+**Quickest embed:** `<iframe>` / `<object>` (zero JS, zero features).
+
+**Most popular OSS:** `react-pdf` (PDF.js under the hood; easy).
+
+**Headless control:** use `pdfjs-dist` directly for custom UI/virtualization.
+
+**Feature‑heavy:** Apryse WebViewer, PSPDFKit, Foxit Web SDK.
+
+**Next.js:** client‑only viewer, load the worker, enable byte‑range.
+:::
+
+## Options at a glance
+
+| Option                                          | License      | Strengths                                                       | Gaps / Caveats                                          | Good for                        |
+| ----------------------------------------------- | ------------ | --------------------------------------------------------------- | ------------------------------------------------------- | ------------------------------- |
+| `<iframe>` / `<object>` / native browser viewer | Free         | Fastest to integrate; no deps                                   | Limited features; browser‑dependence; origin/CSP issues | Internal tools, quick previews  |
+| **react-pdf** (PDF.js)                          | MIT          | Simple component API; text selection; basic forms               | Bundle size; pagination perf for huge PDFs; SSR quirks  | Product UIs with standard needs |
+| **pdfjs-dist** (raw PDF.js)                     | Apache‑2.0   | Max control; tune rendering/virtualization                      | Build your own UI; more plumbing                        | Custom readers, infinite scroll |
+| **Apryse WebViewer** (PDFTron)                  | Commercial   | Rich annotations, forms, redaction, collaboration, Office files | Licensing cost; heavier bundle                          | Enterprise workflows            |
+| **PSPDFKit for Web**                            | Commercial   | Polished UX; signing, stamping, collaboration                   | Licensing cost                                          | Document‑heavy SaaS             |
+| **Foxit Web SDK**                               | Commercial   | Strong enterprise features; performance                         | Licensing cost                                          | Enterprise integrations         |
+| **react-pdf-viewer / pdf-viewer-reactjs**       | OSS (varies) | Prebuilt toolbar/plugins, thumbnails                            | Maturity varies; plugin ecosystems differ               | Faster OSS onboarding           |
+
+> Libraries like **pdf-lib** or **PDFKit** focus on creation/manipulation, not end‑user viewing.
+
+## How PDF rendering works (why it matters)
+
+* **PDF.js (canvas/SVG)**: Most OSS viewers rely on Mozilla’s PDF.js to parse and render each page to `<canvas>` (or sometimes SVG). Canvas is typically faster and more compatible on mobile; SVG may have better selectable text but can bloat the DOM.
+* **Virtualization**: Rendering only visible pages prevents memory blowups—vital for 500+ page docs on mobile.
+* **Workers**: Offload parsing to a Web Worker (`pdf.worker.js`). Without it, the main thread janks.
+* **Range Requests**: Enable HTTP byte‑range so users can open page 300 without downloading everything.
+
+## 1) The simplest path: embed the browser’s viewer
+
+```html
+<object data="/example.pdf#toolbar=0&zoom=page-width" type="application/pdf" width="100%" height="100%">
+  <iframe src="/example.pdf#toolbar=0&zoom=page-width" width="100%" height="100%"></iframe>
+</object>
+```
+
+**Pros:** zero JS; browser handles zoom/print.
+**Cons:** inconsistent UI across browsers; limited features; can be blocked by `X-Frame-Options` or strict CSP.
+**Tip:** For public files, link‑fallback to the native viewer when JS fails.
+
+## 2) `react-pdf` (most popular OSS)
+
+**Install**
+
+```bash
+npm i react-pdf
+```
+
+**Minimal viewer**
+
+```tsx
+import { useState } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+
+export default function SimplePdf({ fileUrl }: { fileUrl: string }) {
+  const [numPages, setNumPages] = useState<number>(0);
+  return (
+    <div className="w-full max-w-4xl mx-auto">
+      <Document file={fileUrl} onLoadSuccess={({ numPages }) => setNumPages(numPages)}>
+        {Array.from({ length: numPages }, (_, i) => (
+          <Page key={i} pageNumber={i + 1} width={900} />
+        ))}
+      </Document>
+    </div>
+  );
+}
+```
+
+**Why choose it**
+
+* Componentized API for React.
+* Built‑in text selection and (basic) form support.
+* Good community docs.
+
+**Watch for**
+
+* Disable SSR for the viewer component (Next.js).
+* Large files: render current + nearby pages only to avoid memory spikes.
+
+:::note Virtualizing pages (concept)
+Render only pages that are visible or near the viewport. Keep a small buffer (for example, ±1 page) for smooth scrolling.
+:::
+
+## 3) Headless: PDF.js (`pdfjs-dist`) with custom UI
+
+**Install**
+
+```bash
+npm i pdfjs-dist
+```
+
+**Skeleton**
+
+```tsx
+import { useEffect, useRef } from 'react';
+import { GlobalWorkerOptions, getDocument, version } from 'pdfjs-dist';
+import 'pdfjs-dist/web/pdf_viewer.css';
+
+GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${version}/build/pdf.worker.min.js`;
+
+export default function HeadlessPdf({ fileUrl }: { fileUrl: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    (async () => {
+      const pdf = await getDocument(fileUrl).promise;
+      const page = await pdf.getPage(1);
+      const viewport = page.getViewport({ scale: 1.5 });
+      const canvas = canvasRef.current!;
+      const ctx = canvas.getContext('2d')!;
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      await page.render({ canvasContext: ctx, viewport }).promise;
+    })();
+  }, [fileUrl]);
+
+  return <canvas ref={canvasRef} className="w-full h-auto" />;
+}
+```
+
+**Why headless**
+
+* Full control over layout, virtualization, page cache, search indexing, and UI.
+* Tailor performance for massive docs.
+
+**Caveats**
+
+* You build the toolbar, thumbnails, text selection, and accessibility affordances.
+
+## 4) Full‑featured commercial SDKs
+
+When you need **annotations, comments, collaboration, e‑signing, redaction, measurement, forms**, or **Office file viewing**, consider:
+
+* Apryse WebViewer (formerly PDFTron)
+* PSPDFKit for Web
+* Foxit Web SDK
+
+**Why:** battle‑tested rendering, enterprise features, support SLAs, and consistent UX across browsers.
+**Cost trade‑off:** higher licensing; heavier bundles. Many offer cloud/on‑prem options and per‑seat or usage licensing.
+
+## Next.js / Vite integration notes
+
+```tsx
+// app/pdf-viewer/page.tsx
+import dynamic from 'next/dynamic';
+const ClientPdf = dynamic(() => import('./ClientPdf'), { ssr: false });
+export default function Page() { return <ClientPdf fileUrl="/files/sample.pdf" />; }
+```
+
+* Workers must be served correctly. If hosting yourself, copy `pdf.worker.min.js` to `public/` and set `workerSrc` accordingly.
+* Range Requests: serve PDFs via a CDN/origin that supports `Accept-Ranges: bytes`.
+* CORS: if loading cross‑origin, enable CORS and set `Content-Type: application/pdf`.
+* Printing: PDF.js has its own print flow; test on Safari and iOS specifically.
+
+## Accessibility and i18n
+
+* Provide keyboard navigation (page up/down, space, arrows).
+* Ensure the text layer is present for selection and screen readers.
+* Add aria labels for toolbar controls.
+* Support RTL locales and mixed‑language content.
+
+## Performance checklist
+
+* Use virtualized pages (render only what’s visible).
+* Cache rendered canvases; reuse when zooming.
+* Preload next/prev page on idle.
+* Keep scale < 2.0 on mobile to avoid massive canvases.
+* Debounce zoom/scroll events.
+* Offload heavy work to Web Workers.
+
+## Security checklist
+
+* Don’t execute PDF contents; treat links as untrusted.
+* Sanitize `mailto:` / block `javascript:` links; open external links with `rel="noopener noreferrer"`.
+* Respect `Content-Security-Policy` and consider `frame-ancestors` / `X-Frame-Options` when embedding.
+
+## Choosing: a decision tree
+
+1. Just preview a PDF? Try `<object>`/`<iframe>` (fast). If you need consistent zoom/print, use `react-pdf`.
+2. Custom UI & performance tuning? Build with `pdfjs-dist` directly; add virtualization.
+3. Annotations/forms/signing/redaction? Choose a commercial SDK (Apryse/PSPDFKit/Foxit).
+4. Massive files / mobile heavy? Headless PDF.js + virtualization + worker + CDN with byte‑range.
+
+## Gotchas & debugging
+
+* **Blank pages**: worker not found → double‑check `workerSrc` path.
+* **Slow first paint**: no range requests → enable `Accept-Ranges`, or load from same origin.
+* **CORS errors**: add `Access-Control-Allow-Origin` and correct `Content-Type`.
+* **SSR crash**: dynamic import with `ssr:false` and guard all `window`/`document` access.
+* **Huge memory**: render 1–3 pages around viewport; recycle canvases.
+
+## Quick recommendations
+
+* **General product UI**: `react-pdf` + light toolbar; add virtualization when PDFs exceed ~200 pages.
+* **Heavily customized experience**: `pdfjs-dist` + your own UI/virtualization.
+* **Enterprise doc workflows**: Apryse/PSPDFKit/Foxit—budget permitting.
+
+---
+

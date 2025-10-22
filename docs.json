@@ -25,16 +25,28 @@
         "groups": [
           {
             "group": "Guides",
-            "pages": [
-              
-            ]
+            "pages": []
           },
           {
             "group": "Endpoints",
+            "icon": "code",
             "pages": [
               "api-reference/endpoint/generate-pdf",
               "api-reference/endpoint/pdf.generated",
               "api-reference/endpoint/pdf.failed"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Blogs",
+        "icon": "newspaper",
+        "groups": [
+          {
+            "group": "Blogs",
+            "pages": [
+              "blogs/pdf-viewer-guide",
+              "blogs/psychology-of-pdfs-over-ui"
             ]
           }
         ]
